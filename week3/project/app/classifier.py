@@ -59,28 +59,24 @@ class NewsCategoryClassifier:
         self.classes = self.pipeline['classifier'].classes_
 
     def predict_proba(self, model_input: dict) -> dict:
-        """
-        [TO BE IMPLEMENTED]
-        Using the `self.pipeline` constructed during initialization,
-        run model inference on a given model input, and return the
-        model prediction probability scores across all labels
-
-        Output format:
-        {
-            "label_1": model_score_label_1,
-            "label_2": model_score_label_2
-            ...
-        }
-        """
-        return {}
+        description = model_input['description']
+        return { label: score for label, score in zip(self.pipeline.classes_, self.pipeline.predict_proba([description])[0])}
 
     def predict_label(self, model_input: dict) -> str:
-        """
-        [TO BE IMPLEMENTED]
-        Using the `self.pipeline` constructed during initialization,
-        run model inference on a given model input, and return the
-        model prediction label
+        description = model_input['description']
+        return self.pipeline.predict([description])[0]
 
-        Output format: predicted label for the model input
-        """
-        return ""
+def main():
+    MODEL_PATH = "../data/news_classifier.joblib"
+    classifier = NewsCategoryClassifier(False)
+    classifier.load(MODEL_PATH)
+    raw_classifier = classifier.pipeline
+    prediction = raw_classifier.predict(['hello'])
+    proba = raw_classifier.predict_proba(['hello'])
+    classes = raw_classifier.classes_
+    print(prediction)
+    print(classes)
+    print(proba)
+
+if __name__ == '__main__':
+    main()

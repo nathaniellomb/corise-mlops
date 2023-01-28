@@ -1,6 +1,8 @@
+import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 from loguru import logger
+from datetime import datetime
 
 from classifier import NewsCategoryClassifier
 
@@ -34,6 +36,13 @@ def startup_event():
     Access to the model instance and log file will be needed in /predict endpoint, make sure you
     store them as global variables
     """
+    global classifier
+    global log_file
+
+    classifier = NewsCategoryClassifier(verbose=True)
+    classifier.load(MODEL_PATH)
+    log_file = open(LOGS_OUTPUT_PATH, 'a')
+
     logger.info("Setup completed")
 
 
@@ -45,6 +54,8 @@ def shutdown_event():
     1. Make sure to flush the log file and close any file pointers to avoid corruption
     2. Any other cleanups
     """
+    log_file.flush()
+    log_file.close()
     logger.info("Shutting down application")
 
 
@@ -54,18 +65,21 @@ def predict(request: PredictRequest):
     # construct the data to be logged
     # construct response
     """
-    [TO BE IMPLEMENTED]
-    1. run model inference and get model predictions for model inputs specified in `request`
-    2. Log the following data to the log file (the data should be logged to the file that was opened in `startup_event`)
-    {
-        'timestamp': <YYYY:MM:DD HH:MM:SS> format, when the request was received,
-        'request': dictionary representation of the input request,
-        'prediction': dictionary representation of the response,
-        'latency': time it took to serve the request, in millisec
-    }
-    3. Construct an instance of `PredictResponse` and return
+    Run model inference and get model predictions for model inputs specified in request
     """
-    response = PredictResponse(scores={"label1": 0.9, "label2": 0.1}, label="label1")
+    start = datetime.now()
+    scores = classifier.predict_proba(request.__dict__)
+    label = classifier.predict_label(request.__dict__)
+    response = PredictResponse(scores = scores, label = label)
+    end = datetime.now()
+
+    log_file.write(json.dumps({
+        'timestamp': start.strftime("<%Y:%m:%d %H:%M:%S>"),
+        'request': request.__dict__,
+        'response': response.__dict__,
+        'latency': (end - start).microseconds / 1000
+    }, indent=2) + '\n')
+
     return response
 
 
