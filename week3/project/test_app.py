@@ -23,7 +23,9 @@ def test_root():
     [TO BE IMPLEMENTED]
     Test the root ("/") endpoint, which just returns a {"Hello": "World"} json response
     """
-    pass
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"msg": "Hello World"}
 
 
 def test_predict_empty():
@@ -31,7 +33,9 @@ def test_predict_empty():
     [TO BE IMPLEMENTED]
     Test the "/predict" endpoint, with an empty request body
     """
-    pass
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"msg": "Hello World"}
 
 
 def test_predict_en_lang():

@@ -41,7 +41,7 @@ def startup_event():
 
     classifier = NewsCategoryClassifier(verbose=True)
     classifier.load(MODEL_PATH)
-    log_file = open(LOGS_OUTPUT_PATH, 'a')
+    log_file = open(LOGS_OUTPUT_PATH, 'a', buffering=1)
 
     logger.info("Setup completed")
 
@@ -79,7 +79,7 @@ def predict(request: PredictRequest):
         'response': response.__dict__,
         'latency': (end - start).microseconds / 1000
     }, indent=2) + '\n')
-
+    
     return response
 
 
